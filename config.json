@@ -1,0 +1,124 @@
+{
+    "dataset_reader": {
+        "type": "dygie",
+        "max_span_width": 8,
+        "token_indexers": {
+            "bert": {
+                "type": "pretrained_transformer_mismatched",
+                "max_length": 512,
+                "model_name": "roberta-base"
+            }
+        }
+    },
+    "model": {
+        "type": "dygie",
+        "embedder": {
+            "token_embedders": {
+                "bert": {
+                    "type": "pretrained_transformer_mismatched",
+                    "max_length": 512,
+                    "model_name": "roberta-base"
+                }
+            }
+        },
+        "feature_size": 20,
+        "feedforward_params": {
+            "dropout": 0.4,
+            "hidden_dims": 150,
+            "num_layers": 2
+        },
+        "initializer": {
+            "regexes": [
+                [
+                    "_span_width_embedding.weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ]
+            ]
+        },
+        "loss_weights": {
+            "coref": 0,
+            "events": 1,
+            "ner": 0,
+            "relation": 0
+        },
+        "max_span_width": 8,
+        "module_initializer": {
+            "regexes": [
+                [
+                    ".*weight",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ],
+                [
+                    ".*weight_matrix",
+                    {
+                        "type": "xavier_normal"
+                    }
+                ]
+            ]
+        },
+        "modules": {
+            "coref": {
+                "coref_prop": 0,
+                "max_antecedents": 100,
+                "spans_per_word": 0.3
+            },
+            "events": {
+                "argument_spans_per_word": 0.8,
+                "loss_weights": {
+                    "arguments": 1,
+                    "trigger": 0.2
+                },
+                "trigger_spans_per_word": 0.3
+            },
+            "ner": {},
+            "relation": {
+                "spans_per_word": 0.5
+            }
+        },
+        "target_task": "events"
+    },
+    "train_data_path": "data/ace-event/collated-data/default-settings/json/train.json",
+    "validation_data_path": "data/ace-event/collated-data/default-settings/json/dev.json",
+    "test_data_path": "data/ace-event/collated-data/default-settings/json/test.json",
+    "trainer": {
+        "checkpointer": {
+            "num_serialized_models_to_keep": 3
+        },
+        "cuda_device": 0,
+        "grad_norm": 5,
+        "learning_rate_scheduler": {
+            "type": "slanted_triangular"
+        },
+        "num_epochs": 50,
+        "optimizer": {
+            "type": "adamw",
+            "lr": 0.001,
+            "parameter_groups": [
+                [
+                    [
+                        "_embedder"
+                    ],
+                    {
+                        "finetune": true,
+                        "lr": 5e-05,
+                        "weight_decay": 0.01
+                    }
+                ]
+            ],
+            "weight_decay": 0
+        },
+        "validation_metric": "+MEAN__arg_class_f1"
+    },
+    "data_loader": {
+        "sampler": {
+            "type": "random"
+        }
+    },
+    "numpy_seed": 1337,
+    "pytorch_seed": 133,
+    "random_seed": 13370
+}
